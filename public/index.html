@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Únete — Computer Society UNAL</title>
-
   <style>
     :root { --bg:#070B2D; --fg:#ffffff; --panel:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.12); }
     html,body { height:100%; }
@@ -20,7 +19,6 @@
     button { width:100%; background:#ffffff; color:#000; border:0; border-radius:12px; padding:12px 16px; font-weight:600; font-size:16px; cursor:pointer; }
     button[disabled] { opacity:.6; cursor:not-allowed; }
     #status { margin-top:8px; font-size:14px; color:#cfcfcf; min-height:20px; }
-    .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
     .footer { text-align:center; color:#bdbdbd; margin-top:16px; font-size:13px; }
   </style>
 </head>
@@ -31,10 +29,6 @@
       <p class="lead">Forma parte de la comunidad y recibe noticias, actividades y oportunidades.</p>
 
       <form id="joinForm" novalidate>
-        <div class="hp" aria-hidden="true">
-          <label>Empresa <input name="company" autocomplete="off" tabindex="-1"></label>
-        </div>
-
         <div class="row">
           <div>
             <label>Nombre</label>
@@ -61,6 +55,11 @@
 
     const phoneOk = (p) => /^[+]?[\d\s-]{7,20}$/.test(p);
 
+    // Mostrar si el servidor está vivo (para evitar dudas)
+    fetch('/api/ping').then(r=>r.ok&&r.json()).then(j=>{
+      if (j?.ok) statusEl.textContent = 'Servidor listo ✔';
+    }).catch(()=>{});
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(form));
@@ -79,14 +78,12 @@
         const res = await fetch('/api/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          body: JSON.stringify({ name, phone })
         });
         const json = await res.json();
-
         statusEl.textContent = json.message || json.error || 'Respuesta recibida.';
         if (res.ok) form.reset();
       } catch (err) {
-        console.error(err);
         statusEl.textContent = 'Hubo un problema enviando el formulario.';
       } finally {
         btn.disabled = false;
