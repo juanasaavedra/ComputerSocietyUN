@@ -2,15 +2,12 @@
   publish = "public"
   command = ""
 
-# Redirección de la página de éxito del formulario
-# Si /public/gracias.html no existe, sirve index.html con un flag.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Si no existe gracias.html, mostrar el “ok” en el index
 [[redirects]]
   from = "/gracias.html"
   to = "/index.html?ok=1"
-  status = 200
-
-# (Opcional) Fallback SPA para cualquier otra ruta estática
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
   status = 200
