@@ -58,23 +58,32 @@
       backdrop-filter: blur(10px);
       overflow:hidden;
     }
-    /* borde brillante animado */
+    /* borde brillante animado — FIX: no bloquear eventos */
     .card::before{
       content:""; position:absolute; inset:-1px; border-radius:28px;
-      padding:1px; background:linear-gradient(130deg, transparent 25%, var(--accent) 50%, transparent 75%);
-      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite:xor; mask-composite:exclude;
+      padding:1px;
+      background:linear-gradient(130deg, transparent 25%, var(--accent) 50%, transparent 75%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+              mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
       animation:glow 6s linear infinite;
       opacity:.55;
+      pointer-events:none;   /* ← clave para poder editar inputs */
+      z-index:0;             /* queda por debajo del contenido */
     }
+    /* aseguramos que el contenido esté encima */
+    .card > * { position:relative; z-index:1; }
+
     @keyframes glow{to{transform:translate3d(2px,0,0)}}
 
-    /* orbe/halo */
+    /* orbe/halo decorativo */
     .orb{
       position:absolute; width:520px; height:520px; right:-140px; top:-140px; border-radius:50%;
       background: radial-gradient(closest-side, rgba(118,201,255,.22), rgba(118,201,255,0) 70%);
       filter: blur(6px);
       pointer-events:none;
+      z-index:0;
     }
 
     h1{margin:0 0 10px; font-size:clamp(28px,4vw,42px); letter-spacing:.2px}
@@ -133,19 +142,19 @@
         <p class="lead">Participa en eventos, workshops y la comunidad de desarrolladores de la UNAL.</p>
       </header>
 
-      <!-- Netlify Forms (sin JS; exportas CSV desde el panel) -->
+      <!-- Netlify Forms -->
       <form name="join" method="POST" data-netlify="true" netlify-honeypot="empresa" action="/gracias.html" autocomplete="on" novalidate>
         <input type="hidden" name="form-name" value="join" />
         <p class="hp" aria-hidden="true"><label>Empresa <input name="empresa" autocomplete="off" /></label></p>
 
         <div class="row">
           <div>
-            <label>Nombre</label>
-            <input name="name" placeholder="Tu nombre" required />
+            <label for="name">Nombre</label>
+            <input id="name" name="name" placeholder="Tu nombre" required />
           </div>
           <div>
-            <label>Teléfono</label>
-            <input name="phone" type="tel" inputmode="tel" placeholder="+57 3001234567" required />
+            <label for="phone">Teléfono</label>
+            <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="+57 3001234567" required />
           </div>
         </div>
 
