@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Únete — Computer Society UNAL</title>
+
+  <style>
+    :root { --bg:#070B2D; --fg:#ffffff; --panel:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.12); }
+    html,body { height:100%; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; }
+    .wrap { min-height:100%; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .card { width:100%; max-width:720px; background:var(--panel); border:1px solid var(--border); border-radius:24px; padding:32px; box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06); backdrop-filter: blur(8px); }
+    h1 { margin:0 0 8px; font-weight:700; font-size: clamp(28px, 4vw, 36px); }
+    p.lead { margin:0 0 24px; color:#d6d6d6; }
+    label { display:block; font-size:14px; margin-bottom:6px; color:#e8e8e8;}
+    input { width:100%; box-sizing:border-box; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--fg); border-radius:12px; padding:12px 14px; font-size:16px; }
+    input:focus { outline:none; box-shadow:0 0 0 3px rgba(255,255,255,.22); }
+    .row { display:grid; gap:14px; margin-bottom:14px; }
+    button { width:100%; background:#ffffff; color:#000; border:0; border-radius:12px; padding:12px 16px; font-weight:600; font-size:16px; cursor:pointer; }
+    button[disabled] { opacity:.6; cursor:not-allowed; }
+    #status { margin-top:8px; font-size:14px; color:#cfcfcf; min-height:20px; }
+    .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+    .footer { text-align:center; color:#bdbdbd; margin-top:16px; font-size:13px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Únete a Computer Society UNAL</h1>
+      <p class="lead">Forma parte de la comunidad y recibe noticias, actividades y oportunidades.</p>
+
+      <form id="joinForm" novalidate>
+        <div class="hp" aria-hidden="true">
+          <label>Empresa <input name="company" autocomplete="off" tabindex="-1"></label>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Nombre</label>
+            <input name="name" placeholder="Tu nombre" required />
+          </div>
+          <div>
+            <label>Teléfono</label>
+            <input name="phone" type="tel" placeholder="+57 3001234567" required />
+          </div>
+        </div>
+
+        <button id="btn">Unirme</button>
+        <div id="status" aria-live="polite"></div>
+      </form>
+
+      <p class="footer">Al enviar aceptas nuestra política de datos. No compartimos tu número.</p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('joinForm');
+    const btn = document.getElementById('btn');
+    const statusEl = document.getElementById('status');
+
+    const phoneOk = (p) => /^[+]?[\d\s-]{7,20}$/.test(p);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      const name = String(data.name || '').trim();
+      const phone = String(data.phone || '').trim();
+
+      if (!name || !phoneOk(phone)) {
+        statusEl.textContent = 'Revisa el nombre y el teléfono (formato válido).';
+        return;
+      }
+
+      btn.disabled = true;
+      statusEl.textContent = 'Enviando…';
+
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+
+        statusEl.textContent = json.message || json.error || 'Respuesta recibida.';
+        if (res.ok) form.reset();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Hubo un problema enviando el formulario.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
